@@ -3,6 +3,10 @@ import 'package:lost_n_found/core/constants/hive_table_constant.dart';
 import 'package:lost_n_found/features/batch/domain/entities/batch_entity.dart';
 import 'package:uuid/uuid.dart';
 
+part 'batch_hive_model.g.dart';
+//Box
+//Adapter : binary lai object ma convert garne
+
 @HiveType(typeId: HiveTableConstant.batchTypeId)
 class BatchHiveModel extends HiveObject {
   @HiveField(0)
@@ -24,9 +28,7 @@ class BatchHiveModel extends HiveObject {
 
   //FromEntity
   factory BatchHiveModel.fromEntity(BatchEntity entity) {
-    return BatchHiveModel(
-      batchName: entity.batchName
-    );
+    return BatchHiveModel(batchName: entity.batchName);
   }
   //ToEntityList
   static List<BatchEntity> toEntityList(List<BatchHiveModel> models) {

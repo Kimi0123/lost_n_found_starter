@@ -8,7 +8,7 @@ A Flutter mobile application for Softwarica College's lost and found system.
 
 This app uses the following backend API:
 
-- **Repository:** https://github.com/kiranrana8973/lost_n_found_api
+- **Repository:** https://github.com/Kimi0123/lost_n_found_api
 
 ## Getting Started
 
@@ -25,7 +25,7 @@ This project is a starting point for a Flutter application.
 1. Clone the repository
 
 ```bash
-git clone https://github.com/kiranrana8973/lost_n_found_mobile.git
+git clone https://github.com/Kimi0123/lost_n_found_mobile.git
 ```
 
 2. Install dependencies

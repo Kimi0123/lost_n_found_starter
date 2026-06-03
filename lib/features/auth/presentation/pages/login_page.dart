@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lost_n_found/features/auth/presentation/state/auth_state.dart';
+import 'package:lost_n_found/features/auth/presentation/view_model/auth_view_model.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/snackbar_utils.dart';
@@ -30,20 +32,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // TODO: Implement login logic
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        // Navigate to dashboard
-        AppRoutes.pushReplacement(context, const DashboardPage());
-      }
+      await ref
+          .read(authViewModelProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
     }
   }
 
@@ -69,8 +63,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final textColor = Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textDark;
-    final secondaryTextColor = Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted;
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textDark;
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textMuted;
+    final authState = ref.watch(authViewModelProvider);
+
+    ref.listen<AuthState>(authViewModelProvider, (previous, next) {
+      if(next.status == AuthStatus.authenticated) {
+        //navigate to dashboard
+        AppRoutes.pushReplacement(context, DashboardPage());
+      }else if(next.status == AuthStatus.error && next.errorMessage != null) {
+        SnackbarUtils.showError(context, next.errorMessage!);
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -90,7 +96,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     width: 200,
                     height: 70,
                     colorFilter: ColorFilter.mode(
-                      isDarkMode ? AppColors.darkTextPrimary : AppColors.primary,
+                      isDarkMode
+                          ? AppColors.darkTextPrimary
+                          : AppColors.primary,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -109,10 +117,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 const SizedBox(height: 8),
                 Text(
                   'Sign in to continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: secondaryTextColor,
-                  ),
+                  style: TextStyle(fontSize: 16, color: secondaryTextColor),
                 ),
                 const SizedBox(height: 40),
 
@@ -201,7 +206,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: _isLoading
+                    child: authState.status == AuthStatus.loading
                         ? const SizedBox(
                             width: 24,
                             height: 24,

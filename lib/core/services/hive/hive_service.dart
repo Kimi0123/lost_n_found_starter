@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:lost_n_found/core/constants/hive_table_constant.dart';
+import 'package:lost_n_found/features/auth/data/models/auth_hive_model.dart';
 import 'package:lost_n_found/features/batch/data/models/batch_hive_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -40,11 +41,17 @@ class HiveService {
     if (!Hive.isAdapterRegistered(HiveTableConstant.batchTypeId)) {
       Hive.registerAdapter(BatchHiveModelAdapter());
     }
+
+    // Register other adapters here
+    if (!Hive.isAdapterRegistered(HiveTableConstant.authTypeId)) {
+      Hive.registerAdapter(AuthHiveModelAdapter());
+    }
   }
 
   //Open Boxes
   Future<void> openBoxes() async {
     await Hive.openBox<BatchHiveModel>(HiveTableConstant.batchTable);
+    await Hive.openBox<AuthHiveModel>(HiveTableConstant.authTable);
   }
 
   //Close Boxes
@@ -75,5 +82,42 @@ class HiveService {
   //delete
   Future<void> deleteBatch(String batchId) async {
     await _batchBox.delete(batchId);
+  }
+
+  // ============================Auth Queries===========================
+
+  Box<AuthHiveModel> get _authBox =>
+      Hive.box<AuthHiveModel>(HiveTableConstant.authTable);
+
+  Future<AuthHiveModel> registerUser(AuthHiveModel model) async {
+    await _authBox.put(model.authId, model);
+    return model;
+  }
+
+  //Login
+  Future<AuthHiveModel?> loginUser(String email, String password) async {
+    final users = _authBox.values.where(
+      (user) => user.email == email && user.password == password,
+    );
+    if (users.isNotEmpty) {
+      return users.first;
+    }
+    return null;
+  }
+
+  //logout
+  Future<void> logoutUser() async {
+    
+  }
+
+  //get current user
+  AuthHiveModel? getCurrentUser(String authId) {
+    return _authBox.get(authId);
+  }
+
+  //is email exists
+  bool isEmailExists(String email) {
+    final users = _authBox.values.where((user) => user.email == email);
+    return users.isNotEmpty;
   }
 }
